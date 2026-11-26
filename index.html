@@ -145,6 +145,23 @@
   .chapter .text p + p { margin-top: 1em; }
   .season { display: inline-block; font-size: 12px; border: 1px solid var(--line); padding: 2px 12px; border-radius: 999px; color: var(--muted); margin-top: 22px; }
 
+  /* Game day gallery */
+  .field { background: var(--ink-2); }
+  .field .lead { color: var(--cream-2); max-width: 32em; margin-bottom: 44px; }
+  .field .feature { margin-bottom: 14px; }
+  .field .feature img { aspect-ratio: 16 / 9; }
+  .masonry { columns: 3; column-gap: 14px; }
+  .masonry .photo { break-inside: avoid; margin-bottom: 14px; box-shadow: 0 18px 40px -18px rgba(0,0,0,.7); }
+  .masonry .photo img, .field .feature img { aspect-ratio: auto; height: auto; }
+  .field .feature img { aspect-ratio: 16 / 9; height: 100%; }
+  .photo figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 40px 16px 14px;
+    background: linear-gradient(transparent, rgba(20,17,15,.85));
+    font-weight: 700; font-size: 15px; line-height: 1.5;
+  }
+  .photo figcaption small { display: block; font-family: "Oswald"; font-weight: 500; font-size: 11px; letter-spacing: .18em; color: var(--orange); }
+
   /* Spirit */
   .spirit { background: var(--cream); color: var(--ink); position: relative; overflow: hidden; }
   .spirit .bignum {
@@ -246,6 +263,9 @@
     .chapter { grid-template-columns: 1fr; gap: 28px; }
     .chapter.rev .photo { order: 0; }
     .strip { grid-template-columns: repeat(2, 1fr); }
+    .masonry { columns: 2; column-gap: 10px; }
+    .masonry .photo { margin-bottom: 10px; }
+    .photo figcaption { font-size: 13px; padding: 30px 10px 10px; }
     .facts { grid-template-columns: repeat(3, 1fr); gap: 10px; }
     .scroll-cue { display: none; }
     .hero { padding-bottom: 16vh; }
@@ -361,6 +381,50 @@
       </div>
     </article>
 
+  </div>
+</section>
+
+<section class="field">
+  <div class="wrap">
+    <div class="eyebrow en reveal">On the Field</div>
+    <h2 class="sec-title display reveal">グラウンドの主役たち</h2>
+    <p class="lead reveal">投げて、打って、走って、守って。<br>ユニフォームを泥だらけにして戦った、きみたちの勇姿。</p>
+
+    <figure class="photo feature reveal" data-caption="さあ、守備につこう！">
+      <img src="assets/img/5.jpg" alt="一斉に守備位置へ駆け出す選手たち" loading="lazy">
+      <figcaption><small>Play Ball</small>さあ、守備につこう！</figcaption>
+    </figure>
+
+    <div class="masonry">
+      <figure class="photo reveal" data-caption="渾身の一球。">
+        <img src="assets/img/6.jpg" alt="マウンドから投球する投手" loading="lazy">
+        <figcaption><small>Pitch</small>渾身の一球</figcaption>
+      </figure>
+      <figure class="photo reveal" data-caption="フルスイング！">
+        <img src="assets/img/8.jpg" alt="バットを振り抜く打者" loading="lazy">
+        <figcaption><small>Swing</small>フルスイング</figcaption>
+      </figure>
+      <figure class="photo reveal" data-caption="狙い球は、ひとつ。">
+        <img src="assets/img/7.jpg" alt="打席で構える打者" loading="lazy">
+        <figcaption><small>At Bat</small>狙い球は、ひとつ</figcaption>
+      </figure>
+      <figure class="photo reveal" data-caption="ワンアウト！声を出していこう。">
+        <img src="assets/img/11.jpg" alt="指を立ててアウトカウントを伝える内野手" loading="lazy">
+        <figcaption><small>One Out</small>ワンアウト！</figcaption>
+      </figure>
+      <figure class="photo reveal" data-caption="河川敷の外野から。">
+        <img src="assets/img/9.jpg" alt="河川敷のグラウンドを歩く外野手" loading="lazy">
+        <figcaption><small>Outfield</small>河川敷の外野から</figcaption>
+      </figure>
+      <figure class="photo reveal" data-caption="ベースまで全力疾走。">
+        <img src="assets/img/10.jpg" alt="背番号7の選手が走る後ろ姿" loading="lazy">
+        <figcaption><small>Run</small>全力疾走</figcaption>
+      </figure>
+      <figure class="photo reveal" data-caption="ホームイン！">
+        <img src="assets/img/12.jpg" alt="砂煙を上げてホームに滑り込む走者" loading="lazy">
+        <figcaption><small>Slide</small>ホームイン！</figcaption>
+      </figure>
+    </div>
   </div>
 </section>
 
