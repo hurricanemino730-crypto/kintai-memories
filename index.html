@@ -239,6 +239,23 @@
   .progress { height: 4px; background: var(--line); border-radius: 2px; margin-top: 6px; cursor: pointer; position: relative; }
   .progress div { position: absolute; inset: 0 auto 0 0; width: 0; background: var(--orange); border-radius: 2px; }
   .time { flex: none; font-family: "Oswald"; font-size: 12px; color: var(--muted); letter-spacing: .05em; }
+  .auto {
+    flex: none; width: 34px; height: 34px; border-radius: 50%; cursor: pointer;
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+    display: grid; place-items: center; transition: background .2s, color .2s, border-color .2s;
+  }
+  .auto svg { width: 16px; height: 16px; }
+  .auto.on { background: rgba(240,122,26,.18); border-color: var(--orange); color: var(--orange); }
+  .auto.on svg { animation: nudge 1.6s ease-in-out infinite; }
+  @keyframes nudge { 50% { transform: translateY(2px); } }
+  .toast {
+    position: fixed; z-index: 55; left: 50%; bottom: calc(max(18px, env(safe-area-inset-bottom)) + 74px);
+    transform: translate(-50%, 10px); opacity: 0; pointer-events: none;
+    background: rgba(34,29,25,.92); border: 1px solid var(--line); color: var(--cream-2);
+    font-size: 12px; padding: 6px 14px; border-radius: 999px; white-space: nowrap;
+    transition: opacity .4s, transform .4s;
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
   /* ---------- Lightbox ---------- */
   .lightbox {
@@ -491,8 +508,12 @@
     <div class="title"><span class="bars"><i></i><i></i><i></i></span>進め我らの王者たち</div>
     <div class="progress" id="progress"><div id="bar"></div></div>
   </div>
+  <button class="auto" id="autoBtn" aria-label="自動スクロール" aria-pressed="false" title="自動スクロール">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6l5 5 5-5M7 13l5 5 5-5"/></svg>
+  </button>
   <div class="time" id="time">0:00</div>
 </div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 <audio id="audio" src="assets/audio/theme.m4a" preload="auto" loop></audio>
 
 <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="写真の拡大表示">
@@ -515,7 +536,9 @@
     player.classList.add("show");
     if (withMusic) {
       audio.volume = 0;
+      audio.currentTime = 0;
       audio.play().then(() => fadeVolume(0.85, 2500)).catch(() => {});
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) setAuto(true, false);
     }
     setTimeout(() => burst(120), 600);
   }
@@ -553,6 +576,64 @@
   $("progress").addEventListener("click", (e) => {
     const r = e.currentTarget.getBoundingClientRect();
     if (audio.duration) audio.currentTime = (e.clientX - r.left) / r.width * audio.duration;
+  });
+
+  // ---------- Auto scroll synced to the song ----------
+  // Speed = remaining distance / remaining song time, recomputed every frame,
+  // so the finale arrives as the song ends, even after pauses or manual scrolling.
+  const HOLD = 4;        // seconds to linger on the hero first
+  const END_EARLY = 6;   // reach the bottom this many seconds before the song ends
+  let auto = false, pos = 0, last = 0, toastTimer;
+  const autoBtn = $("autoBtn");
+  const maxScroll = () => document.documentElement.scrollHeight - innerHeight;
+
+  function toast(msg) {
+    const t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+  }
+  function setAuto(on, notify = true) {
+    auto = on;
+    autoBtn.classList.toggle("on", on);
+    autoBtn.setAttribute("aria-pressed", on);
+    if (on) {
+      pos = scrollY; last = performance.now();
+      if (audio.paused) { if (audio.volume === 0) audio.volume = 0.85; audio.play().catch(() => {}); }
+      requestAnimationFrame(step);
+    }
+    if (notify) toast(on ? "自動スクロール ON" : "自動スクロールを止めました（↓ボタンで再開）");
+  }
+  function step(now) {
+    if (!auto) return;
+    const dt = Math.min(0.1, (now - last) / 1000); last = now;
+    const dur = audio.duration;
+    if (!audio.paused && isFinite(dur) && audio.currentTime > HOLD) {
+      const remainingTime = Math.max(0.5, dur - END_EARLY - audio.currentTime);
+      const remainingDist = maxScroll() - pos;
+      if (remainingDist <= 1) {
+        setAuto(false, false);
+        burst(180);
+        return;
+      }
+      pos += Math.max(remainingDist / remainingTime, 12) * dt;
+      window.scrollTo({ top: pos, behavior: "instant" });
+    }
+    requestAnimationFrame(step);
+  }
+  autoBtn.addEventListener("click", () => {
+    if (!auto && maxScroll() - scrollY <= 1) window.scrollTo({ top: 0, behavior: "instant" });
+    setAuto(!auto);
+  });
+  // Any manual scroll gesture hands control back to the viewer.
+  const stopByUser = (e) => {
+    if (!auto) return;
+    if (e.target && e.target.closest && e.target.closest(".player")) return;
+    setAuto(false);
+  };
+  addEventListener("wheel", stopByUser, { passive: true });
+  addEventListener("touchstart", stopByUser, { passive: true });
+  addEventListener("mousedown", stopByUser);
+  addEventListener("keydown", (e) => {
+    if (["ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(e.key)) stopByUser(e);
   });
 
   // ---------- Reveal on scroll ----------
